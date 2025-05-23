@@ -3,22 +3,32 @@ const express = require("express");
 const app = express();
 
 const { userAuth, authToken } = require("./middleware/auth")
+const { connectDb } = require("./config/database");
+const User = require("./model/user");
 
-app.use("/admin", authToken);
+app.post("/signup", async (req, res) => {
+    const user = new User({
+        firstName: "Virat",
+        lastName: "kohli",
+        emailId: "virat@kohli.com",
+        password: "virat",
+        gender: "male",
+        age: 30
+    })
 
-app.get("/user/getUser", userAuth, (req, res) => {
-    res.send("User data is there");
+    await user.save();
+    res.send("Data save successfully");
 })
 
-app.get("/admin/getAllData", (req, res) => {
-    res.send("All data sent");
-})
+connectDb()
+    .then(() => {
+        console.log("Database connected successfully");
+        app.listen(3000, () => {
+            console.log("Server successfully running on 3000");
+        });
+    })
+    .catch((err) => {
+        console.log("Error occured while connecting database");
+    })
 
-app.get("/admin/deleteData", (req, res) => {
-    res.send("All data delete");
-})
 
-
-app.listen(3000, () => {
-    console.log("Server successfully running on 3000");
-});
