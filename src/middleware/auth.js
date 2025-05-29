@@ -1,28 +1,30 @@
-const authToken = (req, res, next) => {
-    console.log("authToken middleware called")
-    const token = "xyza";
-    const authenticate = token === "xyz";
-    if (!authenticate) {
-        res.send("Unauthorised access")
-    } else {
-        next();
-    }
 
-}
+const jwt = require("jsonwebtoken");
+const User= require("../model/user")
 
-const userAuth = (req, res, next) => {
-    console.log("userAuth middleware called");
-    const token = "abcd";
-    const authenToken = token === "abc";
-    if (!authenToken) {
-        res.send("User not exist");
-    } else {
+const userAuth = async(req, res, next) => {
+    
+    try{
+        const {token}=req.cookies;
+        if(!token){
+            throw new Error("Invalid token");
+        }
+
+        const decodedObj = await jwt.verify(token, "Akansha");
+        const{_id} = decodedObj;
+        const user= await User.findById(_id);
+        if(!user){
+            throw new Error("User not found");
+        }
+        req.user = user;
         next();
+    }catch(err){
+        res.status(400).send("ERROR :" + err.message)
+        
     }
 
 }
 
 module.exports = {
-    authToken,
     userAuth
 }
